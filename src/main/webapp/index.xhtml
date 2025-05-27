@@ -1,0 +1,167 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:p="primefaces"
+      xmlns:f="jakarta.faces.core">
+<h:head>
+    <title>Usuarios</title>
+    <h:outputStylesheet library="webjars" name="primeflex/3.3.1/primeflex.min.css"/>
+    <h:outputStylesheet library="css" name="layout.css"/>
+</h:head>
+<h:body>
+    <div class="layout-wrapper flex justify-content-center">
+        <div class="surface-card shadow-2 border-round p-5"
+             style="max-width: 900px; width: 100%;">
+            <div class="crud-demo">
+                <div class="flex justify-content-center flex-wrap mb-5">
+                    <h1 class="text-4xl font-bold text-900">
+                        ADMINISTRACIÓN DE USUARIOS
+                    </h1>
+                </div>
+
+                <h:form id="form">
+                    <p:growl id="messages" showDetail="true" life="4000"/>
+
+                    <p:toolbar class="mb-4">
+                        <p:toolbarGroup>
+                            <p:commandButton
+                                    value="Nuevo Usuario"
+                                    icon="pi pi-plus"
+                                    actionListener="#{userBean.nuevoUsuario()}"
+                                    update=":dialogs:panel-content"
+                                    oncomplete="PF('dlgUsuarioRegistro').show()"
+                                    styleClass="ui-button-success px-4 py-2"
+                                    style="margin-right: .5rem;">
+                                <p:resetInput target=":dialogs:panel-content"/>
+                            </p:commandButton>
+                        </p:toolbarGroup>
+
+                        <p:toolbarGroup align="right">
+                            <div class="flex align-items-center">
+                                <i class="pi pi-search mr-2 text-500"></i>
+                                <p:inputText id="globalFilter" onkeyup="PF('dtUsuarios').filter()" placeholder="Buscar"
+                                             styleClass="w-24rem"/>
+                            </div>
+                        </p:toolbarGroup>
+                    </p:toolbar>
+
+                    <p:dataTable id="table-user"
+                                 widgetVar="dtUsuarios"
+                                 var="usuario"
+                                 value="#{userBean.users}"
+                                 paginator="true"
+                                 rows="10"
+                                 paginatorPosition="bottom"
+                                 reflow="true"
+                                 rowHover="true"
+                                 responsiveLayout="scroll"
+                                 styleClass="shadow-1 border-round"
+                                 emptyMessage="No se encontraron usuarios">
+
+                        <p:column headerText="ID" style="width:6rem;text-align:center;">
+                            <h:outputText value="#{usuario.id}"/>
+                        </p:column>
+
+                        <p:column headerText="Username" filterBy="#{usuario.username}">
+                            <h:outputText value="#{usuario.username}"/>
+                        </p:column>
+
+                        <p:column headerText="Email" filterBy="#{usuario.email}">
+                            <h:outputText value="#{usuario.email}"/>
+                        </p:column>
+
+                        <p:column headerText="Nombre Completo" filterBy="#{usuario.fullName}">
+                            <h:outputText value="#{usuario.fullName}"/>
+                        </p:column>
+
+                        <p:column headerText="Acciones" style="width:10rem;text-align:center;">
+                            <p:commandButton icon="pi pi-pencil"
+                                             update=":dialogs:panel-content"
+                                             oncomplete="PF('dlgUsuarioRegistro').show()"
+                                             styleClass="ui-button-success rounded-button mr-2"
+                                             process="@this"
+                                             title="Editar usuario">
+                                <f:setPropertyActionListener value="#{usuario}" target="#{userBean.user}"/>
+                                <p:resetInput target="dialogs:panel-content"/>
+                            </p:commandButton>
+                            <p:commandButton icon="pi pi-trash"
+                                             styleClass="ui-button-danger rounded-button"
+                                             process="@this"
+                                             oncomplete="PF('dlgEliminarUsuario').show()"
+                                             title="Eliminar usuario">
+                                <f:setPropertyActionListener value="#{usuario}" target="#{userBean.user}"/>
+                            </p:commandButton>
+                        </p:column>
+                    </p:dataTable>
+                </h:form>
+
+                <h:form id="dialogs">
+                    <p:dialog header="Usuario"
+                              modal="true"
+                              widgetVar="dlgUsuarioRegistro"
+                              responsive="true"
+                              styleClass="surface-card border-round shadow-2"
+                              contentStyle="padding:2rem; min-width: 300px; max-width: 500px;">
+                        <p:outputPanel id="panel-content" class="ui-fluid">
+                            <p:outputPanel rendered="#{not empty userBean.user}">
+                                <div class="field mb-3">
+                                    <p:outputLabel for="username" value="Username" class="mb-1"/>
+                                    <p:inputText id="username" value="#{userBean.user.username}" required="true"
+                                                 styleClass="w-full"/>
+                                </div>
+                                <div class="field mb-3">
+                                    <p:outputLabel for="email" value="Email" class="mb-1"/>
+                                    <p:inputText id="email" value="#{userBean.user.email}" required="true"
+                                                 styleClass="w-full"/>
+                                </div>
+                                <div class="field mb-3">
+                                    <p:outputLabel for="fullName" value="Nombre Completo" class="mb-1"/>
+                                    <p:inputText id="fullName" value="#{userBean.user.fullName}" styleClass="w-full"/>
+                                </div>
+                            </p:outputPanel>
+                        </p:outputPanel>
+
+                        <f:facet name="footer">
+                            <p:commandButton value="Guardar"
+                                             icon="pi pi-check"
+                                             actionListener="#{userBean.guardarUsuario()}"
+                                             update="panel-content :form:table-user :messages"
+                                             process="panel-content @this"
+                                             styleClass="ui-button-success mr-2"/>
+                            <p:commandButton value="Cancelar"
+                                             icon="pi pi-times"
+                                             onclick="PF('dlgUsuarioRegistro').hide()"
+                                             class="ui-button-secondary"
+                                             type="button"/>
+                        </f:facet>
+                    </p:dialog>
+
+                    <p:confirmDialog widgetVar="dlgEliminarUsuario"
+                                     width="320"
+                                     message="¿Eliminar el usuario?"
+                                     header="Confirmar"
+                                     severity="warn"
+                                     styleClass="surface-card border-round shadow-2"
+                                     contentStyle="padding:1.5rem;">
+                        <p:commandButton value="Sí"
+                                         icon="pi pi-check"
+                                         actionListener="#{userBean.eliminar()}"
+                                         process="@this"
+                                         update=":form:table-user :messages"
+                                         oncomplete="PF('dlgEliminarUsuario').hide()"
+                                         styleClass="ui-button-danger mr-2"/>
+                        <p:commandButton value="No"
+                                         type="button"
+                                         class="ui-button-secondary"
+                                         icon="pi pi-times"
+                                         onclick="PF('dlgEliminarUsuario').hide()"/>
+                    </p:confirmDialog>
+                </h:form>
+            </div>
+        </div>
+    </div>
+</h:body>
+
+</html>
